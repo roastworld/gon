@@ -26,35 +26,50 @@ func upload(ctx context.Context, opts *Options) (string, error) {
 		cmd = *opts.BaseCmd
 	}
 
-	// We only set the path if it isn't set. This lets the options set the
-	// path to the codesigning binary that we use.
-	if cmd.Path == "" {
-		path, err := exec.LookPath("xcrun")
+	if opts.UseRCodeSign != nil && *opts.UseRCodeSign == true {
+		path, err := exec.LookPath("rcodesign")
 		if err != nil {
 			return "", err
 		}
 		cmd.Path = path
-	}
+		cmd.Args = []string{
+			filepath.Base(cmd.Path),
+			"notary-submit",
+			"--api-key-path", opts.Keypath,
+			"--staple",
+			opts.File,
+		}
+	} else {
+		// We only set the path if it isn't set. This lets the options set the
+		// path to the codesigning binary that we use.
+		if cmd.Path == "" {
+			path, err := exec.LookPath("xcrun")
+			if err != nil {
+				return "", err
+			}
+			cmd.Path = path
+		}
 
-	cmd.Args = []string{
-		filepath.Base(cmd.Path),
-		"altool",
-		"--notarize-app",
-		"--primary-bundle-id", opts.BundleId,
-		"-u", opts.Username,
-		"-p", opts.Password,
-	}
+		cmd.Args = []string{
+			filepath.Base(cmd.Path),
+			"altool",
+			"--notarize-app",
+			"--primary-bundle-id", opts.BundleId,
+			"-u", opts.Username,
+			"-p", opts.Password,
+		}
 
-	if opts.Provider != "" {
+		if opts.Provider != "" {
+			cmd.Args = append(cmd.Args,
+				"--asc-provider", opts.Provider,
+			)
+		}
+
 		cmd.Args = append(cmd.Args,
-			"--asc-provider", opts.Provider,
+			"-f", opts.File,
+			"--output-format", "xml",
 		)
 	}
-
-	cmd.Args = append(cmd.Args,
-		"-f", opts.File,
-		"--output-format", "xml",
-	)
 
 	// We store all output in out for logging and in case there is an error
 	var out, combined bytes.Buffer

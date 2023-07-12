@@ -28,6 +28,9 @@ type Config struct {
 	// Dmg, if present, creates a dmg file to package the signed `Source` files
 	// into. Dmg files support stapling so this allows offline usage.
 	Dmg *Dmg `hcl:"dmg,block"`
+
+	UseRCodeSign *bool  `hcl:"use_rcodesign,optional"`
+	Keypath      string `hcl:"rcodesign_keypath,optional"`
 }
 
 // AppleId are the authentication settings for Apple systems.

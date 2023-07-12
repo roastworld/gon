@@ -16,6 +16,9 @@ type Options struct {
 	// File is the file to notarize. This must be in zip, dmg, or pkg format.
 	File string
 
+	// Keypath is the path to the API key for notarization
+	Keypath string
+
 	// BundleId is the bundle ID for the package. Ex. "com.example.myapp"
 	BundleId string
 
@@ -49,6 +52,9 @@ type Options struct {
 	// used for tests to overwrite where the codesign binary is. If this isn't
 	// specified then we use `xcrun altool` as the base.
 	BaseCmd *exec.Cmd
+
+	// UseRCodeSign is a flag for using rcodesign instead of the default xcrun tools
+	UseRCodeSign *bool
 }
 
 // Notarize performs the notarization process for macOS applications. This
